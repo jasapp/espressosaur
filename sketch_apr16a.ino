@@ -89,7 +89,7 @@ void setupTimer() {
 
   TCCR1A = 0;
   TCCR1B = 0;
-  timer_counter = 65536 - 16 / 256 / 50;
+  timer_counter = 62000;
   TCNT1 = timer_counter;                   // preload timer
   TCCR1B |= (1 << CS12);                   // 256 prescaler 
   TIMSK1 |= (1 << TOIE1);                  // enable timer overflow interrupt
@@ -121,7 +121,7 @@ ISR(TIMER1_OVF_vect) {
   openSolenoid();
   
   if (arm > pump_start_at) {
-    setPumpSpeed(map(arm, 0, 1023, pump_start_at, 1023));
+    setPumpSpeed(arm - pump_start_at);
   }
 
   // if the arm has moved to the off position
