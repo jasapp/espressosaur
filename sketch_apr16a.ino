@@ -14,12 +14,16 @@
 #include <CmdMessenger.h>
 
 #define shot_arm 0
+#define analog_comparator_v 5
 #define solenoid 13
 #define shot_heating_element 1
 #define pump_output 11
 
 const int shot_solenoid_threshold = 5; 
 const int shot_pump_threshold = 20;
+
+int solenoid_open_at;
+int pump_start_at;
 
 int shot_in_progress = 0;
 int shot_counter = 0;
@@ -41,15 +45,11 @@ int solenoidPosition() {
 }
 
 void openSolenoid() {
-  if (solenoidPosition()) {
-    operateSolenoid(0);
-  }
+  operateSolenoid(0);
 }
 
 void closeSolenoid() {
-  if (!solenoidPosition()) {
-    operateSolenoid(1);
-  }
+  operateSolenoid(1);
 }
 
 int pumpRunning() {
@@ -76,6 +76,7 @@ int shotInProgress() {
 }
 
 void stopShot() {
+  shot_counter++;
   shot_in_progress = 0;
   stopPump();
   closeSolenoid();
@@ -120,10 +121,10 @@ void setupTimer() {
 
   TCCR1A = 0;
   TCCR1B = 0;
-  timer_counter = calculateInterval(2);  // 2hz
-  TCNT1 = timer_counter;                 // preload timer
-  TCCR1B |= (1 << CS12);                 // 256 prescaler 
-  TIMSK1 |= (1 << TOIE1);                // enable timer overflow interrupt
+  timer_counter = calculateInterval(2);  
+  TCNT1 = timer_counter;                   // preload timer
+  TCCR1B |= (1 << CS12);                   // 256 prescaler 
+  TIMSK1 |= (1 << TOIE1);                  // enable timer overflow interrupt
 
   interrupts();
 }
@@ -143,36 +144,47 @@ void cancelShotHandleInterrupt() {
   ACSR = B11011011;
 }
 
-ISR(TIMER1_OVF_vect)
-{
+ISR(TIMER1_OVF_vect) {
   TCNT1 = timer_counter;
   int arm = shotArmPosition();
-  setPumpSpeed(arm);
 
-  if (arm < 180) {
-    timerOff();
+  // it's possible for the solenoid to be open without the pump running
+  // this gives us preinfusion at line pressure
+  setPumpSpeed(arm);
+  openSolenoid();
+
+  // if the arm has moved to the off position
+  if (arm < analog_comparator_v) {
     stopShot();
     shotHandleInterrupt();
+    timerOff();
   }
 }
 
-ISR(ANALOG_COMP_vect)
-{
+ISR(ANALOG_COMP_vect) {
   cancelShotHandleInterrupt();  // the handle has been moved
   setupTimer();                 // set the timer so we can watch the handle closer
 }
 
+void setupHandle() {
+  solenoid_open_at = analogRead(analog_comparator_v);
+  pump_start_at = solenoid_open_at + 20; 
+}
+
 void setup() {
   pinMode(shot_arm, INPUT); 
+  pinMode(analog_comparator_v, INPUT);
   pinMode(solenoid, OUTPUT);
   pinMode(shot_heating_element, OUTPUT);
   pinMode(pump_output, OUTPUT);
   Serial.begin(9600);
 
+  setupHandle();
   stopPump();
   closeSolenoid();
   shotHandleInterrupt();
 }
 
 void loop() {
+
 }
