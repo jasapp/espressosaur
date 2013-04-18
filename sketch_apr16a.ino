@@ -19,9 +19,6 @@
 #define shot_heating_element 1
 #define pump_output 11
 
-const int shot_solenoid_threshold = 5; 
-const int shot_pump_threshold = 20;
-
 int solenoid_open_at;
 int pump_start_at;
 
@@ -87,41 +84,12 @@ void startShot() {
   openSolenoid();
 }
 
-// can be replaced by other functions
-void manageShotBoiler() {
-  int val = shotArmPosition();
-  if (val > shot_solenoid_threshold) {
-
-    if (!shotInProgress()) {
-      startShot();
-    }
-
-    if (val > shot_pump_threshold) {
-      if (pump_speed != val) {
-	setPumpSpeed(val);
-      }
-    } else {
-      stopPump();
-    }
-  } else if (shotInProgress()) {
-    stopShot();
-  }
-}
-
-void manageSteamBoiler() {
- 
-}
-
-int calculateInterval(int hz) {
-  return 65536 - 16 / 256 / hz;
-}
-
 void setupTimer() {
   noInterrupts();
 
   TCCR1A = 0;
   TCCR1B = 0;
-  timer_counter = calculateInterval(2);  
+  timer_counter = 65536 - 16 / 256 / 50;
   TCNT1 = timer_counter;                   // preload timer
   TCCR1B |= (1 << CS12);                   // 256 prescaler 
   TIMSK1 |= (1 << TOIE1);                  // enable timer overflow interrupt
@@ -150,8 +118,11 @@ ISR(TIMER1_OVF_vect) {
 
   // it's possible for the solenoid to be open without the pump running
   // this gives us preinfusion at line pressure
-  setPumpSpeed(arm);
   openSolenoid();
+  
+  if (arm > pump_start_at) {
+    setPumpSpeed(map(arm, 0, 1023, pump_start_at, 1023));
+  }
 
   // if the arm has moved to the off position
   if (arm < analog_comparator_v) {
