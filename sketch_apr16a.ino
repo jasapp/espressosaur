@@ -120,10 +120,7 @@ ISR(TIMER1_OVF_vect) {
   // it's possible for the solenoid to be open without the pump running
   // this gives us preinfusion at line pressure
   openSolenoid();
-  
-  if (arm > pump_start_at) {
-    setPumpSpeed(arm - pump_start_at);
-  }
+  (arm > pump_start_at) ? setPumpSpeed(arm - pump_start_at) : stopPump();
 
   // if the arm has moved to the off position
   if (arm < analog_comparator_v) {
