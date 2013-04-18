@@ -18,6 +18,7 @@
 #define solenoid 13
 #define shot_heating_element 1
 #define pump_output 11
+#define preinfuse_gap 25;
 
 int solenoid_open_at;
 int pump_start_at;
@@ -139,7 +140,7 @@ ISR(ANALOG_COMP_vect) {
 
 void setupHandle() {
   solenoid_open_at = analogRead(analog_comparator_v);
-  pump_start_at = solenoid_open_at + 20; 
+  pump_start_at = solenoid_open_at + preinfuse_gap; 
 }
 
 void setup() {
