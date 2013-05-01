@@ -8,19 +8,21 @@
  */
 
 // https://github.com/rocketscream/Low-Power.git
-#include <LowPower.h>
+// #include <LowPower.h>
 
 // https://github.com/dreamcat4/CmdMessenger.git
 #include <CmdMessenger.h>
 
 #define shot_arm 0
-#define analog_comparator_v 5
-#define solenoid 13
-#define shot_heating_element 1
-#define pump_output 11
-#define preinfuse_gap 25;
+#define solenoid_open 3
+#define solenoid_close 4
+#define shot_heating_element 12
+#define pump_output 8
+#define preinfuse_gap 25
+#define data_led 7
+#define solenoid_open_at 220
+#define solenoid_close_at 200
 
-int solenoid_open_at;
 int pump_start_at;
 
 int shot_in_progress = 0;
@@ -29,12 +31,19 @@ int solenoid_position = 0;
 int pump_speed = 0;
 int timer_counter = 0;
 
-void sendShotData() {
+volatile int send_serial = 0;
+int data_led_state = 0;
 
+void sendShotData() {
+  if (shotInProgress()) {
+    data_led_state = !data_led_state;
+    digitalWrite(data_led, data_led_state);
+  }
 }
 
 void operateSolenoid(int position) {
-  digitalWrite(solenoid, position);
+  digitalWrite(solenoid_open, !position);
+  digitalWrite(solenoid_close, position);
   solenoid_position = position;
 }
 
@@ -87,14 +96,12 @@ void startShot() {
 
 void setupTimer() {
   noInterrupts();
-
   TCCR1A = 0;
   TCCR1B = 0;
-  timer_counter = 62000;
+  timer_counter = 64886;                   // 100 Hz
   TCNT1 = timer_counter;                   // preload timer
-  TCCR1B |= (1 << CS12);                   // 256 prescaler 
+  TCCR1B |= (1 << CS12);                   // 256 prescaler
   TIMSK1 |= (1 << TOIE1);                  // enable timer overflow interrupt
-
   interrupts();
 }
 
@@ -106,6 +113,7 @@ void timerOff() {
 }
 
 void shotHandleInterrupt() {
+  // ADMUX = B01000000;
   ACSR = B01011011;
 }
 
@@ -119,14 +127,18 @@ ISR(TIMER1_OVF_vect) {
 
   // it's possible for the solenoid to be open without the pump running
   // this gives us preinfusion at line pressure
-  openSolenoid();
   (arm > pump_start_at) ? setPumpSpeed(arm - pump_start_at) : stopPump();
 
-  // if the arm has moved to the off position
-  if (arm < analog_comparator_v) {
-    stopShot();
-    shotHandleInterrupt();
-    timerOff();
+  // if the arm has moved to the on position
+  if (arm >= solenoid_open_at) {
+    startShot();
+  } else {
+    // if the arm has moved to the off position
+    if (arm < solenoid_close_at) {
+      stopShot();
+      shotHandleInterrupt();
+      timerOff();
+    }
   }
 }
 
@@ -136,24 +148,31 @@ ISR(ANALOG_COMP_vect) {
 }
 
 void setupHandle() {
-  solenoid_open_at = analogRead(analog_comparator_v);
   pump_start_at = solenoid_open_at + preinfuse_gap; 
 }
 
 void setup() {
   pinMode(shot_arm, INPUT); 
-  pinMode(analog_comparator_v, INPUT);
-  pinMode(solenoid, OUTPUT);
+  pinMode(solenoid_open, OUTPUT);
+  pinMode(solenoid_close, OUTPUT);
   pinMode(shot_heating_element, OUTPUT);
   pinMode(pump_output, OUTPUT);
+  pinMode(data_led, OUTPUT);
   Serial.begin(9600);
 
   setupHandle();
   stopPump();
   closeSolenoid();
-  shotHandleInterrupt();
+  shotHandleInterrupt(); 
 }
 
 void loop() {
+  /* int arm = analogRead(shot_arm); */
+  /* Serial.print("Arm: "); */
+  /* Serial.println(arm); */
+  /* if(shotInProgress()) { */
+  /*   Serial.println("Shot in progress!"); */
+  /* } */
 
+  /* delay(1000); */
 }
