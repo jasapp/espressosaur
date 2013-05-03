@@ -7,6 +7,8 @@
  * Date: April 17, 2013
  */
 
+#include <SoftwareSerial.h>
+
 // https://github.com/rocketscream/Low-Power.git
 // #include <LowPower.h>
 
@@ -33,6 +35,8 @@ int timer_counter = 0;
 
 volatile int send_serial = 0;
 int data_led_state = 0;
+
+SoftwareSerial lcd = SoftwareSerial(0,2); 
 
 void sendShotData() {
   if (shotInProgress()) {
@@ -76,6 +80,10 @@ void stopPump() {
 // returns a value between 0 and 1023 where 0 is closed
 int shotArmPosition() {
   return analogRead(shot_arm);
+}
+
+int shotArmPercentage() {
+  return map(shotArmPosition(), solenoid_open_at, 1023, 0, 100);
 }
 
 int shotInProgress() {
@@ -135,6 +143,7 @@ ISR(TIMER1_OVF_vect) {
   } else {
     // if the arm has moved to the off position
     if (arm < solenoid_close_at) {
+
       stopShot();
       shotHandleInterrupt();
       timerOff();
@@ -151,6 +160,37 @@ void setupHandle() {
   pump_start_at = solenoid_open_at + preinfuse_gap; 
 }
 
+void setupLcd() {
+  addChars();
+ lcd.write(0xFE);
+ lcd.write(0x50);
+ lcd.write(200);
+ delay(10);
+
+ lcd.write(0xFE);
+ lcd.write(0x99);
+ lcd.write(255);
+ delay(10); 
+ 
+ lcd.write(0xFE);
+ lcd.write(0x4B);
+ lcd.write(0xFE);
+ lcd.write(0x54);
+ delay(10); 
+ // setBackground(205,0,100); // dark pink
+ // setBackground(255,0,255); // purple
+ setBackground(255,255,255); // white
+ // setBackground(255,255,255); // blueish green
+}
+
+void manageLcd() {
+  if (shotInProgress()) {
+    lcdShot(shotArmPercentage(),0,0);
+  } else {
+    lcdIdle(); 
+  }
+}
+
 void setup() {
   pinMode(shot_arm, INPUT); 
   pinMode(solenoid_open, OUTPUT);
@@ -158,7 +198,12 @@ void setup() {
   pinMode(shot_heating_element, OUTPUT);
   pinMode(pump_output, OUTPUT);
   pinMode(data_led, OUTPUT);
+
   Serial.begin(9600);
+  lcd.begin(9600);
+
+  setupLcd();
+  manageLcd();
 
   setupHandle();
   stopPump();
@@ -174,5 +219,6 @@ void loop() {
   /*   Serial.println("Shot in progress!"); */
   /* } */
 
-  /* delay(1000); */
+  manageLcd();
+  delay(50);
 }

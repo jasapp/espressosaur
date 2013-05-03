@@ -89,8 +89,12 @@ int percentageToBars(int percentage) {
 int last_bars = 0;
 
 void percentageBar(int bars) {
-  for (int i=0; i<bars; i++) {
-    lcd.write(4);
+  for (int i=0; i<lcd_length; i++) {
+    if (i < bars) {
+      lcd.write(4);
+    } else {
+      lcd.write(" ");
+    }
   }
 }
 
@@ -105,8 +109,11 @@ void lcdIdle() {
 void lcdShot(int percentage, int grams, int seconds) {
   int bars = percentageToBars(percentage);
   if (current_state != SHOT_STATE || bars != last_bars) { 
-    clearLcd();
+    goHome();
     percentageBar(bars);
+    int red = map(percentage, 0, 100, 255, 0);
+    int green = map(percentage, 0, 100, 255, 160);
+    setBackground(red, green, 255);
     delay(10);
     last_bars = bars; 
   }
