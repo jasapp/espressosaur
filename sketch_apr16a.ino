@@ -162,24 +162,13 @@ void setupHandle() {
 
 void setupLcd() {
   addChars();
- lcd.write(0xFE);
- lcd.write(0x50);
- lcd.write(200);
- delay(10);
-
- lcd.write(0xFE);
- lcd.write(0x99);
- lcd.write(255);
- delay(10); 
- 
- lcd.write(0xFE);
- lcd.write(0x4B);
- lcd.write(0xFE);
- lcd.write(0x54);
- delay(10); 
+  setContrast(200);
+  setBrightness(255);
+  cursorOff();
+  blockCursorOff();
  // setBackground(205,0,100); // dark pink
  // setBackground(255,0,255); // purple
- setBackground(255,255,255); // white
+  setBackground(255,255,255); // white
  // setBackground(255,255,255); // blueish green
 }
 

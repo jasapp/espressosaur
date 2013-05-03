@@ -63,9 +63,27 @@ void moveBackward() {
   writeLcdCommand(0x4C);
 }
 
+void cursorOff() {
+  writeLcdCommand(0x4B);
+}
+
+void blockCursorOff() {
+  writeLcdCommand(0x4B);
+}
+
 void setBackground(int red, int green, int blue) {
   char cmds[] = { 0xD0, red, green, blue };
   writeLcdCommand(cmds, 4);
+}
+
+void setContrast(int contrast) {
+  char cmds[] = { 0x50, contrast };
+  writeLcdCommand(cmds, 2); 
+}
+
+void setBrightness(int brightness) {
+  char cmds[] = { 0x99, brightness };
+  writeLcdCommand(cmds, 2); 
 }
 
 void lcdMessage(char *message) {
@@ -98,6 +116,13 @@ void percentageBar(int bars) {
   }
 }
 
+// just playing around here, clean this up sometime
+void fadeBackground(int percentage) {
+  int red = map(percentage, 0, 100, 255, 0);
+  int green = map(percentage, 0, 100, 255, 160);
+  setBackground(red, green, 255);
+}
+
 void lcdIdle() {
   if (current_state != IDLE_STATE) {
     clearLcd();
@@ -111,10 +136,7 @@ void lcdShot(int percentage, int grams, int seconds) {
   if (current_state != SHOT_STATE || bars != last_bars) { 
     goHome();
     percentageBar(bars);
-    int red = map(percentage, 0, 100, 255, 0);
-    int green = map(percentage, 0, 100, 255, 160);
-    setBackground(red, green, 255);
-    delay(10);
+    fadeBackground(percentage);
     last_bars = bars; 
   }
 
