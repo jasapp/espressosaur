@@ -160,18 +160,6 @@ void setupHandle() {
   pump_start_at = solenoid_open_at + preinfuse_gap; 
 }
 
-void setupLcd() {
-  addChars();
-  setContrast(200);
-  setBrightness(255);
-  cursorOff();
-  blockCursorOff();
- // setBackground(205,0,100); // dark pink
- // setBackground(255,0,255); // purple
-  setBackground(255,255,255); // white
- // setBackground(255,255,255); // blueish green
-}
-
 void manageLcd() {
   if (shotInProgress()) {
     lcdShot(shotArmPercentage(),0,0);
