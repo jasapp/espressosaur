@@ -106,8 +106,8 @@ void setupLcd() {
   setBrightness(255);
   cursorOff();
   blockCursorOff();
- // setBackground(205,0,100); // dark pink
- // setBackground(255,0,255); // purple
+  // setBackground(205,0,100); // dark pink
+  // setBackground(255,0,255); // purple
   setBackground(255,255,255); // white
  // setBackground(255,255,255); // blueish green
 }
@@ -135,9 +135,11 @@ void percentageBar(int bars) {
 
 // just playing around here, clean this up sometime
 void fadeBackground(int percentage) {
-  int red = map(percentage, 0, 100, 255, 0);
-  int green = map(percentage, 0, 100, 255, 160);
-  setBackground(red, green, 255);
+  // int red = map(percentage, 0, 100, 255, 0);
+  //int green = map(percentage, 0, 100, 255, 160);
+  int green = map(percentage, 0, 100, 255, 0);
+  // setBackground(red, green, 255);
+  setBackground(255, green, 255);
 }
 
 // don't use the blinking block cursor, in the movie it doesn't blink
@@ -145,36 +147,31 @@ void shallWePlayAGame() {
   char quote[] = "Shall we play a game?";
 }
 
-char intToChar(int i) {
-  return (char)i;
+int spacesToScoot(int num, int *spaces) {
+  int start = 0;
+  if (num > 9)
+    start += 1; 
+  if (num > 99)
+    start += 1; 
+
+  return spaces[start];
 }
 
 void writeGrams(int grams) {
   char gram_str[3];
-  int start = 0;
-  int spaces[] = { 2, 1 };
-
-  if (grams < 10)
-    start += 1;
+  int spaces[] = { 2, 1, 1 };
 
   sprintf(gram_str, "%dg", grams);
-  setCursor(spaces[start], 2);
+  setCursor(spacesToScoot(grams, spaces), 2);
   lcdMessage(gram_str); 
 }
 
 void writeSeconds(int seconds) {
   char second_str[3];
-  int start = 0; 
   int spaces[] = { 15, 14, 13 };
-
-  if (seconds > 9) 
-    start += 1; 
-
-  if (seconds > 99)
-    start += 1;
   
   sprintf(second_str, "%ds", seconds);
-  setCursor(spaces[start], 2);
+  setCursor(spacesToScoot(seconds, spaces), 2);
   lcdMessage(second_str);
 }
 
@@ -192,7 +189,7 @@ void lcdShot(int percentage, int grams, int seconds) {
     goHome();
     percentageBar(bars);
     fadeBackground(percentage);
-    writeSeconds(percentage*10);
+    writeSeconds(percentage);
     writeGrams(percentage);
     last_bars = bars;
   }
