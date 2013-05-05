@@ -17,8 +17,6 @@
 // #include <LowPower.h>
 
 #define shot_arm 0
-#define solenoid_open 3
-#define solenoid_close 4
 #define shot_heating_element 12
 #define pump_output 8
 #define preinfuse_gap 25
@@ -45,24 +43,6 @@ void sendShotData() {
   if (shotInProgress() && send_serial) {
     shotDataCmd(millis() - shot_started_at, pump_speed);
   }
-}
-
-void operateSolenoid(int position) {
-  digitalWrite(solenoid_open, !position);
-  digitalWrite(solenoid_close, position);
-  solenoid_position = position;
-}
-
-int solenoidPosition() {
-  return solenoid_position;
-}
-
-void openSolenoid() {
-  operateSolenoid(0);
-}
-
-void closeSolenoid() {
-  operateSolenoid(1);
 }
 
 int pumpRunning() {
@@ -204,12 +184,11 @@ void manageLcd() {
 
 void setup() {
   pinMode(shot_arm, INPUT); 
-  pinMode(solenoid_open, OUTPUT);
-  pinMode(solenoid_close, OUTPUT);
   pinMode(shot_heating_element, OUTPUT);
   pinMode(pump_output, OUTPUT);
   pinMode(data_led, OUTPUT);
-
+  
+  setupMachine();
   setupCmds();
   setupLcd();
   manageLcd();
