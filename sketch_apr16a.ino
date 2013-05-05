@@ -43,7 +43,7 @@ SoftwareSerial lcd = SoftwareSerial(0,2);
 
 void sendShotData() {
   if (shotInProgress() && send_serial) {
-    Serial.println("Data.");
+    //  Serial.println("Data.");
     data_led_state = !data_led_state;
     digitalWrite(data_led, data_led_state);
   }
@@ -83,7 +83,8 @@ void stopPump() {
 
 // returns a value between 0 and 1023 where 0 is closed
 int shotArmPosition() {
-  return analogRead(shot_arm);
+  int position = analogRead(shot_arm);     // sometimes we see negative values 
+  return (position >= 0 ? position : 0);   // so we remove them
 }
 
 int shotArmPercentage() {
@@ -194,7 +195,7 @@ void setupHandle() {
 
 void manageLcd() {
   if (shotInProgress()) {
-    lcdShot(shotArmPercentage(),0,second_counter);
+    lcdShot(shotArmPercentage(), 0, second_counter);
   } else {
     lcdIdle(); 
   }

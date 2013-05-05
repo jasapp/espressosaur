@@ -71,8 +71,18 @@ void blockCursorOff() {
   writeLcdCommand(0x4B);
 }
 
+int checkColor(int color) {
+  if (color < 0) 
+    return 0;
+
+  if (color > 255) 
+    return 255; 
+
+  return color;
+}
+
 void setBackground(int red, int green, int blue) {
-  char cmds[] = { 0xD0, red, green, blue };
+  char cmds[] = { 0xD0, checkColor(red), checkColor(green), checkColor(blue) };
   writeLcdCommand(cmds, 4);
 }
 
@@ -135,10 +145,7 @@ void percentageBar(int bars) {
 
 // just playing around here, clean this up sometime
 void fadeBackground(int percentage) {
-  // int red = map(percentage, 0, 100, 255, 0);
-  //int green = map(percentage, 0, 100, 255, 160);
   int green = map(percentage, 0, 100, 255, 0);
-  // setBackground(red, green, 255);
   setBackground(255, green, 255);
 }
 
