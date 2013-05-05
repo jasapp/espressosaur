@@ -189,11 +189,11 @@ void lcdShot(int percentage, int grams, int seconds) {
     goHome();
     percentageBar(bars);
     fadeBackground(percentage);
-    writeSeconds(percentage);
-    writeGrams(percentage);
     last_bars = bars;
   }
 
+  writeSeconds(seconds);
+  writeGrams(grams);
   current_state = SHOT_STATE;
 }
 

@@ -26,13 +26,16 @@
 #define solenoid_close_at 200
 
 int pump_start_at;
-
 int shot_in_progress = 0;
 int shot_counter = 0;
 int solenoid_position = 0; 
 int pump_speed = 0;
-int timer_counter = 0;
+int timer1_counter = 0;
+int timer3_counter = 0;
+int timer4_counter = 0;
 
+int second_mod = 0; 
+volatile int second_counter = 0;
 volatile int send_serial = 0;
 int data_led_state = 0;
 
@@ -75,6 +78,7 @@ void setPumpSpeed(int speed) {
 
 void stopPump() {
   setPumpSpeed(0);
+  second_counter = 0;
 }
 
 // returns a value between 0 and 1023 where 0 is closed
@@ -93,6 +97,7 @@ int shotInProgress() {
 void stopShot() {
   shot_counter++;
   shot_in_progress = 0;
+  second_mod = 0;
   stopPump();
   closeSolenoid();
 }
@@ -106,10 +111,24 @@ void setupTimer() {
   noInterrupts();
   TCCR1A = 0;
   TCCR1B = 0;
-  timer_counter = 64886;                   // 100 Hz
-  TCNT1 = timer_counter;                   // preload timer
-  TCCR1B |= (1 << CS12);                   // 256 prescaler
-  TIMSK1 |= (1 << TOIE1);                  // enable timer overflow interrupt
+  timer1_counter = 64886;
+  TCNT1 = timer1_counter;                   // preload timer, 100 Hz
+  TCCR1B |= (1 << CS12);                    // 256 prescaler
+  TIMSK1 |= (1 << TOIE1);                   // enable timer overflow interrupt
+
+  TCCR3A = 0;
+  TCCR3B = 0;
+  timer3_counter = 3036;
+  TCNT3 = timer3_counter;                   // preload timer, 1 Hz
+  TCCR3B |= (1 << CS32);                    // 256 prescaler
+  TIMSK3 |= (1 << TOIE3);                   // enable timer overflow interrupt
+
+  TCCR4A = 0;
+  TCCR4B = 0;
+  timer4_counter = 31250;
+  TCNT4 = timer4_counter;                   // preload timer, 2 Hz
+  TCCR4B |= (1 << CS42);                    // 256 prescaler
+  TIMSK4 |= (1 << TOIE4);                   // enable timer overflow interrupt
   interrupts();
 }
 
@@ -117,11 +136,12 @@ void timerOff() {
   noInterrupts();
   TCCR1A = 0;
   TCCR1B = 0;
+  TCCR3A = 0;
+  TCCR3B = 0;
   interrupts();
 }
 
 void shotHandleInterrupt() {
-  // ADMUX = B01000000;
   ACSR = B01011011;
 }
 
@@ -129,8 +149,18 @@ void cancelShotHandleInterrupt() {
   ACSR = B11011011;
 }
 
+ISR(TIMER3_OVF_vect) {
+  TCNT3 = timer3_counter;
+  second_counter += 1;
+}
+
+ISR(TIMER4_OVF_vect) {
+  TCNT4 = timer4_counter;
+  send_serial = 1; 
+}
+
 ISR(TIMER1_OVF_vect) {
-  TCNT1 = timer_counter;
+  TCNT1 = timer1_counter;
   int arm = shotArmPosition();
 
   // it's possible for the solenoid to be open without the pump running
@@ -162,7 +192,7 @@ void setupHandle() {
 
 void manageLcd() {
   if (shotInProgress()) {
-    lcdShot(shotArmPercentage(),0,0);
+    lcdShot(shotArmPercentage(),0,second_counter);
   } else {
     lcdIdle(); 
   }
