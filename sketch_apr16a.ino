@@ -23,7 +23,7 @@
 #define preinfuse_gap 25
 #define data_led 7
 #define solenoid_open_at 220
-#define solenoid_close_at 200
+#define solenoid_close_at 180
 
 int pump_start_at;
 int shot_in_progress = 0;
@@ -42,7 +42,8 @@ int data_led_state = 0;
 SoftwareSerial lcd = SoftwareSerial(0,2); 
 
 void sendShotData() {
-  if (shotInProgress()) {
+  if (shotInProgress() && send_serial) {
+    Serial.println("Data.");
     data_led_state = !data_led_state;
     digitalWrite(data_led, data_led_state);
   }
@@ -78,7 +79,6 @@ void setPumpSpeed(int speed) {
 
 void stopPump() {
   setPumpSpeed(0);
-  second_counter = 0;
 }
 
 // returns a value between 0 and 1023 where 0 is closed
@@ -96,8 +96,8 @@ int shotInProgress() {
 
 void stopShot() {
   shot_counter++;
+  second_counter = 0;
   shot_in_progress = 0;
-  second_mod = 0;
   stopPump();
   closeSolenoid();
 }
@@ -138,6 +138,8 @@ void timerOff() {
   TCCR1B = 0;
   TCCR3A = 0;
   TCCR3B = 0;
+  TCCR4A = 0;
+  TCCR4B = 0;
   interrupts();
 }
 
@@ -156,7 +158,7 @@ ISR(TIMER3_OVF_vect) {
 
 ISR(TIMER4_OVF_vect) {
   TCNT4 = timer4_counter;
-  send_serial = 1; 
+  send_serial = 1;
 }
 
 ISR(TIMER1_OVF_vect) {
@@ -226,6 +228,7 @@ void loop() {
   /*   Serial.println("Shot in progress!"); */
   /* } */
 
+  sendShotData();
   manageLcd();
   delay(50);
 }

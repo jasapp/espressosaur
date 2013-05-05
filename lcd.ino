@@ -193,7 +193,6 @@ void lcdShot(int percentage, int grams, int seconds) {
   }
 
   writeSeconds(seconds);
-  writeGrams(grams);
   current_state = SHOT_STATE;
 }
 
