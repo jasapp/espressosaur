@@ -2,6 +2,7 @@
 #define IDLE_STATE 0
 #define SHOT_STATE 1
 
+SoftwareSerial lcd = SoftwareSerial(0,2); 
 int current_state = -1;
 
 void createChar(char *custom, int location) {
@@ -111,6 +112,8 @@ void clearLcd() {
 }
 
 void setupLcd() {
+
+  lcd.begin(9600);
   addChars();
   setContrast(200);
   setBrightness(255);

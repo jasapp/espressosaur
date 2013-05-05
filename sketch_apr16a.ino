@@ -7,13 +7,14 @@
  * Date: April 17, 2013
  */
 
+// https://github.com/dreamcat4/CmdMessenger.git
+#include <CmdMessenger.h>
+#include <Base64.h>
+#include <Streaming.h>
 #include <SoftwareSerial.h>
 
 // https://github.com/rocketscream/Low-Power.git
 // #include <LowPower.h>
-
-// https://github.com/dreamcat4/CmdMessenger.git
-#include <CmdMessenger.h>
 
 #define shot_arm 0
 #define solenoid_open 3
@@ -34,18 +35,15 @@ int timer1_counter = 0;
 int timer3_counter = 0;
 int timer4_counter = 0;
 
-int second_mod = 0; 
 volatile int second_counter = 0;
 volatile int send_serial = 0;
-int data_led_state = 0;
+volatile int shot_started_at = 0; 
 
-SoftwareSerial lcd = SoftwareSerial(0,2); 
+int data_led_state = 0;
 
 void sendShotData() {
   if (shotInProgress() && send_serial) {
-    //  Serial.println("Data.");
-    data_led_state = !data_led_state;
-    digitalWrite(data_led, data_led_state);
+    shotDataCmd(millis() - shot_started_at, pump_speed);
   }
 }
 
@@ -101,11 +99,13 @@ void stopShot() {
   shot_in_progress = 0;
   stopPump();
   closeSolenoid();
+  // shotEndCmd();
 }
 
 void startShot() {
   shot_in_progress = 1; 
   openSolenoid();
+  // shotStartCmd();
 }
 
 void setupTimer() {
@@ -185,6 +185,7 @@ ISR(TIMER1_OVF_vect) {
 }
 
 ISR(ANALOG_COMP_vect) {
+  shot_started_at = millis();
   cancelShotHandleInterrupt();  // the handle has been moved
   setupTimer();                 // set the timer so we can watch the handle closer
 }
@@ -209,12 +210,9 @@ void setup() {
   pinMode(pump_output, OUTPUT);
   pinMode(data_led, OUTPUT);
 
-  Serial.begin(9600);
-  lcd.begin(9600);
-
+  setupCmds();
   setupLcd();
   manageLcd();
-
   setupHandle();
   stopPump();
   closeSolenoid();
@@ -222,14 +220,8 @@ void setup() {
 }
 
 void loop() {
-  /* int arm = analogRead(shot_arm); */
-  /* Serial.print("Arm: "); */
-  /* Serial.println(arm); */
-  /* if(shotInProgress()) { */
-  /*   Serial.println("Shot in progress!"); */
-  /* } */
-
   sendShotData();
   manageLcd();
+  manageCmds();
   delay(50);
 }
