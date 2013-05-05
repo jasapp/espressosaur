@@ -16,19 +16,13 @@
 // https://github.com/rocketscream/Low-Power.git
 // #include <LowPower.h>
 
-#define shot_arm 0
-#define shot_heating_element 12
-#define pump_output 8
 #define preinfuse_gap 25
-#define data_led 7
 #define solenoid_open_at 220
 #define solenoid_close_at 180
 
 int pump_start_at;
 int shot_in_progress = 0;
 int shot_counter = 0;
-int solenoid_position = 0; 
-int pump_speed = 0;
 int timer1_counter = 0;
 int timer3_counter = 0;
 int timer4_counter = 0;
@@ -37,36 +31,10 @@ volatile int second_counter = 0;
 volatile int send_serial = 0;
 volatile int shot_started_at = 0; 
 
-int data_led_state = 0;
-
 void sendShotData() {
   if (shotInProgress() && send_serial) {
-    shotDataCmd(millis() - shot_started_at, pump_speed);
+    shotDataCmd(millis() - shot_started_at, pumpSpeed());
   }
-}
-
-int pumpRunning() {
-  return pump_speed;
-}
-
-// speed is between 0 and 1023 where 0 is off
-void setPumpSpeed(int speed) {
-  pump_speed = speed; 
-  analogWrite(pump_output, speed / 4);
-}
-
-void stopPump() {
-  setPumpSpeed(0);
-}
-
-// returns a value between 0 and 1023 where 0 is closed
-int shotArmPosition() {
-  int position = analogRead(shot_arm);     // sometimes we see negative values 
-  return (position >= 0 ? position : 0);   // so we remove them
-}
-
-int shotArmPercentage() {
-  return map(shotArmPosition(), solenoid_open_at, 1023, 0, 100);
 }
 
 int shotInProgress() {
@@ -183,11 +151,6 @@ void manageLcd() {
 }
 
 void setup() {
-  pinMode(shot_arm, INPUT); 
-  pinMode(shot_heating_element, OUTPUT);
-  pinMode(pump_output, OUTPUT);
-  pinMode(data_led, OUTPUT);
-  
   setupMachine();
   setupCmds();
   setupLcd();
