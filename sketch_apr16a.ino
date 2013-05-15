@@ -12,15 +12,13 @@
 #include <Base64.h>
 #include <Streaming.h>
 #include <SoftwareSerial.h>
+#include "ShotControl.h"
 
 // https://github.com/rocketscream/Low-Power.git
 // #include <LowPower.h>
 
-#define preinfuse_gap 25
-#define solenoid_open_at 220
-#define solenoid_close_at 180
+ShotControl shot_control;
 
-int pump_start_at;
 int shot_in_progress = 0;
 int shot_counter = 0;
 int timer1_counter = 0;
@@ -116,15 +114,14 @@ ISR(TIMER1_OVF_vect) {
 
   // it's possible for the solenoid to be open without the pump running
   // this gives us preinfusion at line pressure
-  (arm > pump_start_at) ? setPumpSpeed(arm - pump_start_at) : stopPump();
+  setPumpSpeed(shot_control.pumpSpeed(arm));
 
   // if the arm has moved to the on position
-  if (arm >= solenoid_open_at) {
+  if (shot_control.solenoidOpen(arm)) {
     startShot();
   } else {
     // if the arm has moved to the off position
-    if (arm < solenoid_close_at) {
-
+    if (shot_control.solenoidClose(arm)) {
       stopShot();
       shotHandleInterrupt();
       timerOff();
@@ -138,10 +135,7 @@ ISR(ANALOG_COMP_vect) {
   setupTimer();                 // set the timer so we can watch the handle closer
 }
 
-void setupHandle() {
-  pump_start_at = solenoid_open_at + preinfuse_gap; 
-}
-
+// rig something up with a queue here for displaying lingering messages
 void manageLcd() {
   if (shotInProgress()) {
     lcdShot(shotArmPercentage(), 0, second_counter);
@@ -155,7 +149,6 @@ void setup() {
   setupCmds();
   setupLcd();
   manageLcd();
-  setupHandle();
   stopPump();
   closeSolenoid();
   shotHandleInterrupt(); 

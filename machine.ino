@@ -1,9 +1,17 @@
 #define shot_arm 0
+
 #define solenoid_open 3
 #define solenoid_close 4
-#define data_led 7
+
 #define pump_output 8
-#define shot_heating_element 12
+
+#define shot_element 12
+#define shot_thermistor_one 13
+#define shot_thermistor_two 13
+#define shot_thermistor_three 13
+
+#define steam_element_one 13
+#define steam_element_two 14
 
 int solenoid_position = 0; 
 int pump_speed = 0;
@@ -54,8 +62,7 @@ void setupMachine() {
   pinMode(shot_arm, INPUT); 
   pinMode(solenoid_open, OUTPUT);
   pinMode(solenoid_close, OUTPUT);
-  pinMode(shot_heating_element, OUTPUT);
+  pinMode(shot_element, OUTPUT);
   pinMode(pump_output, OUTPUT);
-  pinMode(data_led, OUTPUT);
 }
 
