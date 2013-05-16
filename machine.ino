@@ -55,7 +55,7 @@ int shotArmPosition() {
 }
 
 int shotArmPercentage() {
-  return map(shotArmPosition(), solenoid_open_at, 1023, 0, 100);
+  return map(shotArmPosition(), 220, 1023, 0, 100);
 }
 
 void setupMachine() {

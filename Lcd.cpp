@@ -1,21 +1,38 @@
+#include "Arduino.h"
+#include "Lcd.h"
+#include <SoftwareSerial.h>
+
 #define lcd_length 16
 #define IDLE_STATE 0
 #define SHOT_STATE 1
 
-SoftwareSerial lcd = SoftwareSerial(0,2); 
-int current_state = -1;
+Lcd::Lcd() : serial(0,2) {
+  current_state = -1;
+  last_bars = 0; 
 
-void createChar(char *custom, int location) {
-  lcd.write(0xFE);
-  lcd.write(0x4E);
-  lcd.write((uint8_t)location);
+  serial.begin(9600);
+  addChars();
+  setContrast(200);
+  setBrightness(255);
+  cursorOff();
+  blockCursorOff();
+  setBackground(255,255,255); // white
+  // setBackground(205,0,100); // dark pink
+  // setBackground(255,0,255); // purple
+  // setBackground(255,255,255); // blueish green
+}
+
+void Lcd::createChar(char *custom, int location) {
+  serial.write(0xFE);
+  serial.write(0x4E);
+  serial.write((uint8_t)location);
 
   for (int i=0; i<8; i++) {
-    lcd.write(custom[i]);
+    serial.write(custom[i]);
   }
 }
 
-void addChars() {
+void Lcd::addChars() {
   char p1[] = { 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10 };
   char p2[] = { 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18 };
   char p3[] = { 0x1C, 0x1C, 0x1C, 0x1C, 0x1C, 0x1C, 0x1C, 0x1C };
@@ -29,10 +46,10 @@ void addChars() {
   createChar(p5, 4);
 }
 
-void writeLcdCommand(char *cmds, int count, int delay_cmd) {
-  lcd.write(0xFE);
+void Lcd::writeLcdCommand(char *cmds, int count, int delay_cmd) {
+  serial.write(0xFE);
   for (int i=0; i < count; i++) 
-    lcd.write(cmds[i]);
+    serial.write(cmds[i]);
 
   if (delay_cmd) {
     delay(10); 
@@ -40,39 +57,39 @@ void writeLcdCommand(char *cmds, int count, int delay_cmd) {
 }
 
 // delay after the command
-void writeLcdCommand(char *cmds, int count) {
+void Lcd::writeLcdCommand(char *cmds, int count) {
   writeLcdCommand(cmds, count, 1);
 }
 
-void writeLcdCommand(char cmd) {
+void Lcd::writeLcdCommand(char cmd) {
   writeLcdCommand(&cmd, 1); 
 }
 
-void clearScreen() {
+void Lcd::clearScreen() {
   writeLcdCommand(0x58);
 }
 
-void goHome() {
+void Lcd::goHome() {
   writeLcdCommand(0x48);
 }
 
-void moveForward() {
+void Lcd::moveForward() {
   writeLcdCommand(0x4D);
 }
 
-void moveBackward() {
+void Lcd::moveBackward() {
   writeLcdCommand(0x4C);
 }
 
-void cursorOff() {
+void Lcd::cursorOff() {
   writeLcdCommand(0x4B);
 }
 
-void blockCursorOff() {
+void Lcd::blockCursorOff() {
   writeLcdCommand(0x4B);
 }
 
-int checkColor(int color) {
+int Lcd::checkColor(int color) {
   if (color < 0) 
     return 0;
 
@@ -82,50 +99,36 @@ int checkColor(int color) {
   return color;
 }
 
-void setBackground(int red, int green, int blue) {
+void Lcd::setBackground(int red, int green, int blue) {
   char cmds[] = { 0xD0, checkColor(red), checkColor(green), checkColor(blue) };
   writeLcdCommand(cmds, 4);
 }
 
-void setContrast(int contrast) {
+void Lcd::setContrast(int contrast) {
   char cmds[] = { 0x50, contrast };
   writeLcdCommand(cmds, 2); 
 }
 
-void setBrightness(int brightness) {
+void Lcd::setBrightness(int brightness) {
   char cmds[] = { 0x99, brightness };
   writeLcdCommand(cmds, 2); 
 }
 
-void setCursor(int column, int row) {
+void Lcd::setCursor(int column, int row) {
   char cmds[] = { 0x47, column, row };
   writeLcdCommand(cmds, 3); 
 }
 
-void lcdMessage(char *message) {
-  lcd.write(message);
+void Lcd::lcdMessage(char *message) {
+  serial.write(message);
 }
 
-void clearLcd() {
+void Lcd::clearLcd() {
   clearScreen();
   goHome();
 }
 
-void setupLcd() {
-
-  lcd.begin(9600);
-  addChars();
-  setContrast(200);
-  setBrightness(255);
-  cursorOff();
-  blockCursorOff();
-  // setBackground(205,0,100); // dark pink
-  // setBackground(255,0,255); // purple
-  setBackground(255,255,255); // white
- // setBackground(255,255,255); // blueish green
-}
-
-int percentageToBars(int percentage) {
+int Lcd::percentageToBars(int percentage) {
   double a = (lcd_length / 100.0) * percentage;
   int bars = 0; 
   for (int i=0; i<a; i++) {
@@ -134,30 +137,28 @@ int percentageToBars(int percentage) {
   return bars; 
 }
 
-int last_bars = 0;
-
-void percentageBar(int bars) {
+void Lcd::percentageBar(int bars) {
   for (int i=0; i<lcd_length; i++) {
     if (i < bars) {
-      lcd.write(4);
+      serial.write(4);
     } else {
-      lcd.write(" ");
+      serial.write(" ");
     }
   }
 }
 
 // just playing around here, clean this up sometime
-void fadeBackground(int percentage) {
+void Lcd::fadeBackground(int percentage) {
   int green = map(percentage, 0, 100, 255, 0);
   setBackground(255, green, 255);
 }
 
 // don't use the blinking block cursor, in the movie it doesn't blink
-void shallWePlayAGame() {
+void Lcd::shallWePlayAGame() {
   char quote[] = "Shall we play a game?";
 }
 
-int spacesToScoot(int num, int *spaces) {
+int Lcd::spacesToScoot(int num, int *spaces) {
   int start = 0;
   if (num > 9)
     start += 1; 
@@ -167,7 +168,7 @@ int spacesToScoot(int num, int *spaces) {
   return spaces[start];
 }
 
-void writeGrams(int grams) {
+void Lcd::writeGrams(int grams) {
   char gram_str[3];
   int spaces[] = { 2, 1, 1 };
 
@@ -176,7 +177,7 @@ void writeGrams(int grams) {
   lcdMessage(gram_str); 
 }
 
-void writeSeconds(int seconds) {
+void Lcd::writeSeconds(int seconds) {
   char second_str[3];
   int spaces[] = { 15, 14, 13 };
   
@@ -185,7 +186,7 @@ void writeSeconds(int seconds) {
   lcdMessage(second_str);
 }
 
-void lcdIdle() {
+void Lcd::lcdIdle() {
   if (current_state != IDLE_STATE) {
     clearLcd();
     lcdMessage("Idle");
@@ -193,7 +194,7 @@ void lcdIdle() {
   current_state = IDLE_STATE; 
 }
 
-void lcdShot(int percentage, int grams, int seconds) {
+void Lcd::lcdShot(int percentage, int grams, int seconds) {
   int bars = percentageToBars(percentage);
   if (current_state != SHOT_STATE || bars != last_bars) { 
     goHome();
@@ -206,6 +207,6 @@ void lcdShot(int percentage, int grams, int seconds) {
   current_state = SHOT_STATE;
 }
 
-void lcdShotSummary(int shot, int grams, int seconds) {
+void Lcd::lcdShotSummary(int shot, int grams, int seconds) {
 
 }
