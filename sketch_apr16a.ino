@@ -12,12 +12,14 @@
 #include <Base64.h>
 #include <Streaming.h>
 #include <SoftwareSerial.h>
+#include "Machine.h"
 #include "ShotControl.h"
 #include "Lcd.h"
 
 // https://github.com/rocketscream/Low-Power.git
 // #include <LowPower.h>
 
+Machine *machine; 
 ShotControl *shot_control;
 Lcd *lcd;
 
@@ -33,7 +35,7 @@ volatile int shot_started_at = 0;
 
 void sendShotData() {
   if (shotInProgress() && send_serial) {
-    shotDataCmd(millis() - shot_started_at, pumpSpeed());
+    shotDataCmd(millis() - shot_started_at, machine->pumpSpeed());
   }
 }
 
@@ -45,14 +47,14 @@ void stopShot() {
   shot_counter++;
   second_counter = 0;
   shot_in_progress = 0;
-  stopPump();
-  closeSolenoid();
+  machine->stopPump();
+  machine->closeSolenoid();
   // shotEndCmd();
 }
 
 void startShot() {
   shot_in_progress = 1; 
-  openSolenoid();
+  machine->openSolenoid();
   // shotStartCmd();
 }
 
@@ -112,11 +114,11 @@ ISR(TIMER4_OVF_vect) {
 
 ISR(TIMER1_OVF_vect) {
   TCNT1 = timer1_counter;
-  int arm = shotArmPosition();
+  int arm = machine->shotArmPosition();
 
   // it's possible for the solenoid to be open without the pump running
   // this gives us preinfusion at line pressure
-  setPumpSpeed(shot_control->pumpSpeed(arm));
+  machine->setPumpSpeed(shot_control->pumpSpeed(arm));
 
   // if the arm has moved to the on position
   if (shot_control->solenoidOpen(arm)) {
@@ -140,20 +142,19 @@ ISR(ANALOG_COMP_vect) {
 // rig something up with a queue here for displaying lingering messages
 void manageLcd() {
   if (shotInProgress()) {
-    lcd->lcdShot(shotArmPercentage(), 0, second_counter);
+    lcd->lcdShot(machine->shotArmPercentage(), 0, second_counter);
   } else {
     lcd->lcdIdle();
   }
 }
 
 void setup() {
-  lcd = new Lcd();
+  machine = new Machine();
   shot_control = new ShotControl();
-  setupMachine();
+  lcd = new Lcd();
+
   setupCmds();
   manageLcd();
-  stopPump();
-  closeSolenoid();
   shotHandleInterrupt(); 
 }
 
