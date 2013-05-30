@@ -115,11 +115,13 @@ ISR(TIMER4_OVF_vect) {
 
 ISR(TIMER1_OVF_vect) {
   TCNT1 = timer1_counter;
+  // let's just have one of these, not both...
   int arm = machine->shotArmPosition();
+  int arm_percentage = machine->shotArmPercentage();
 
   // it's possible for the solenoid to be open without the pump running
   // this gives us preinfusion at line pressure
-  machine->setPumpSpeed(shot_control->pumpSpeed(arm));
+  machine->setPumpSpeed(shot_control->pumpSpeed(arm_percentage));
 
   // if the arm has moved to the on position
   if (shot_control->solenoidOpen(arm)) {
@@ -143,9 +145,9 @@ ISR(ANALOG_COMP_vect) {
 // rig something up with a queue here for displaying lingering messages
 void manageLcd() {
   if (shotInProgress()) {
-    lcd->lcdShot(machine->shotArmPercentage(), 0, second_counter);
+    lcd->lcdShot(machine->pumpSpeed(), 0, second_counter);
   } else {
-    lcd->writeMode("Fubar");
+    lcd->writeMode(shot_control->controlName());
   }
 }
 
