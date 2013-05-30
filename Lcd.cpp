@@ -186,10 +186,10 @@ void Lcd::writeSeconds(int seconds) {
   lcdMessage(second_str);
 }
 
-void Lcd::lcdIdle() {
+void Lcd::writeMode(char *mode) {
   if (current_state != IDLE_STATE) {
     clearLcd();
-    lcdMessage("Idle");
+    lcdMessage(mode);
   }
   current_state = IDLE_STATE; 
 }

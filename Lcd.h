@@ -15,7 +15,7 @@ class Lcd {
   Lcd();
   void clearLcd();
   void setupLcd();
-  void lcdIdle(); 
+  void writeMode(char*); 
   void lcdShot(int, int, int); 
   void lcdShotSummary(int, int, int); 
   void lcdMessage(char*); 

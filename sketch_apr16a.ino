@@ -13,8 +13,9 @@
 #include <Streaming.h>
 #include <SoftwareSerial.h>
 #include "Machine.h"
-#include "ShotControl.h"
 #include "Lcd.h"
+#include "ShotControl.h"
+#include "LogShotControl.h"
 
 // https://github.com/rocketscream/Low-Power.git
 // #include <LowPower.h>
@@ -144,13 +145,13 @@ void manageLcd() {
   if (shotInProgress()) {
     lcd->lcdShot(machine->shotArmPercentage(), 0, second_counter);
   } else {
-    lcd->lcdIdle();
+    lcd->writeMode("Fubar");
   }
 }
 
 void setup() {
   machine = new Machine();
-  shot_control = new ShotControl();
+  shot_control = new LogShotControl();
   lcd = new Lcd();
 
   setupCmds();

@@ -1,12 +1,11 @@
 #include "Arduino.h"
 #include "ShotControl.h"
 
-#define preinfuse_gap 25
-#define solenoid_open_at 220
-#define solenoid_close_at 180
-#define pump_start_at 255
-
 ShotControl::ShotControl() {
+  preinfuse_gap = 25;
+  solenoid_open_at = 220;
+  solenoid_close_at = 180;
+  pump_start_at = 255;
 }
 
 int ShotControl::startShot(int arm) {
@@ -29,6 +28,6 @@ char* ShotControl::controlName() {
   return "Direct"; 
 }
 
-int ShotControl::pumpSpeed(int arm) {
-  return (arm > pump_start_at) ? (arm - pump_start_at) : 0;
-}
+// int ShotControl::pumpSpeed(int arm) {
+//   return (arm > pump_start_at) ? (arm - pump_start_at) : 0;
+// }
