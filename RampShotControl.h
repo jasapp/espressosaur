@@ -9,6 +9,7 @@
 
 class RampShotControl: public ShotControl {
   int max;
+  int preinfuse_duration;
   int ramp_duration;
   int soak_duration;
   int down_duration;
