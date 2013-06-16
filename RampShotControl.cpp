@@ -3,7 +3,7 @@
 #include "RampShotControl.h"
 
 RampShotControl::RampShotControl() {
-  end = 1; 
+  end = 0; 
 }
 
 char* RampShotControl::controlName() {
@@ -46,5 +46,5 @@ int RampShotControl::solenoidOpen(int arm) {
 }
 
 int RampShotControl::solenoidClose(int arm) {
-  return (end == 1) && ShotControl::solenoidClose(arm);
+  return (end == 1) || ShotControl::solenoidClose(arm);
 }
