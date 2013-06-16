@@ -188,6 +188,7 @@ void Lcd::writeSeconds(int seconds) {
 
 void Lcd::writeMode(char *mode) {
   if (current_state != IDLE_STATE) {
+    fadeBackground(0);
     clearLcd();
     lcdMessage(mode);
   }
