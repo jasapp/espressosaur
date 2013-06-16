@@ -8,6 +8,7 @@
 #include "Arduino.h"
 
 class Machine { 
+  int seconds;
   int solenoid_position;
   int pump_speed;
  public:
@@ -20,6 +21,9 @@ class Machine {
   int stopPump();
   int shotArmPosition(); 
   int shotArmPercentage();
+  int currentShotDuration();
+  void updateSeconds();
+  void resetSeconds();
  private:
   int operateSolenoid(int position);
 };

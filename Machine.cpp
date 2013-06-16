@@ -19,6 +19,7 @@ Machine::Machine() {
   pinMode(shot_element, OUTPUT);
   pinMode(pump_output, OUTPUT);
 
+  resetSeconds();
   stopPump();
   closeSolenoid();
 }
@@ -56,6 +57,18 @@ int Machine::setPumpSpeed(int speed) {
 int Machine::stopPump() {
   setPumpSpeed(0);
   return 0;
+}
+
+int Machine::currentShotDuration() {
+  return seconds;
+}
+
+void Machine::updateSeconds() {
+  seconds += 1; 
+}
+
+void Machine::resetSeconds() {
+  seconds = 0; 
 }
 
 // returns a value between 0 and 1023 where 0 is closed

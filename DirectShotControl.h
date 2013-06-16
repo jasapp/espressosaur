@@ -10,7 +10,7 @@
 class DirectShotControl: public ShotControl {
  public: 
   char* controlName(); 
-  int pumpSpeed(int); 
+  int pumpSpeed(int, int); 
 };
 
 #endif

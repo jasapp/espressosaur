@@ -5,7 +5,6 @@ char* DirectShotControl::controlName() {
   return "Direct";
 }
 
-int DirectShotControl::pumpSpeed(int arm) {
+int DirectShotControl::pumpSpeed(int arm, int seconds) {
   return arm;
 }
-

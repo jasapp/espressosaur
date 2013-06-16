@@ -15,7 +15,8 @@
 #include "Machine.h"
 #include "Lcd.h"
 #include "ShotControl.h"
-#include "LogShotControl.h"
+#include "DirectShotControl.h"
+#include "RampShotControl.h"
 
 // https://github.com/rocketscream/Low-Power.git
 // #include <LowPower.h>
@@ -30,7 +31,6 @@ int timer1_counter = 0;
 int timer3_counter = 0;
 int timer4_counter = 0;
 
-volatile int second_counter = 0;
 volatile int send_serial = 0;
 volatile int shot_started_at = 0; 
 
@@ -46,10 +46,10 @@ int shotInProgress() {
 
 void stopShot() {
   shot_counter++;
-  second_counter = 0;
   shot_in_progress = 0;
   machine->stopPump();
   machine->closeSolenoid();
+  machine->resetSeconds();
   // shotEndCmd();
 }
 
@@ -103,9 +103,11 @@ void cancelShotHandleInterrupt() {
   ACSR = B11011011;
 }
 
+// don't leave this here
+// move the timer into Machine (?)
 ISR(TIMER3_OVF_vect) {
   TCNT3 = timer3_counter;
-  second_counter += 1;
+  machine->updateSeconds(); 
 }
 
 ISR(TIMER4_OVF_vect) {
@@ -118,10 +120,12 @@ ISR(TIMER1_OVF_vect) {
   // let's just have one of these, not both...
   int arm = machine->shotArmPosition();
   int arm_percentage = machine->shotArmPercentage();
+  int seconds = machine->currentShotDuration();
 
   // it's possible for the solenoid to be open without the pump running
   // this gives us preinfusion at line pressure
-  machine->setPumpSpeed(shot_control->pumpSpeed(arm_percentage));
+  int new_pump_speed = shot_control->pumpSpeed(arm_percentage, seconds);
+  machine->setPumpSpeed(new_pump_speed); 
 
   // if the arm has moved to the on position
   if (shot_control->solenoidOpen(arm)) {
@@ -129,9 +133,9 @@ ISR(TIMER1_OVF_vect) {
   } else {
     // if the arm has moved to the off position
     if (shot_control->solenoidClose(arm)) {
+      timerOff();
       stopShot();
       shotHandleInterrupt();
-      timerOff();
     }
   }
 }
@@ -145,7 +149,7 @@ ISR(ANALOG_COMP_vect) {
 // rig something up with a queue here for displaying lingering messages
 void manageLcd() {
   if (shotInProgress()) {
-    lcd->lcdShot(machine->pumpSpeed(), 0, second_counter);
+    lcd->lcdShot(machine->pumpSpeed(), 0, machine->currentShotDuration());
   } else {
     lcd->writeMode(shot_control->controlName());
   }
@@ -153,7 +157,7 @@ void manageLcd() {
 
 void setup() {
   machine = new Machine();
-  shot_control = new LogShotControl();
+  shot_control = new RampShotControl();
   lcd = new Lcd();
 
   setupCmds();
