@@ -9,13 +9,13 @@
 
 class Machine { 
   int seconds;
-  int solenoid_position;
   int pump_speed;
+  bool solenoid_is_open;
  public:
   Machine();
-  int solenoidPosition(); 
-  int openSolenoid();
-  int closeSolenoid();
+  bool solenoidIsOpen(); 
+  bool openSolenoid();
+  bool closeSolenoid();
   int pumpSpeed();
   int setPumpSpeed(int);
   int stopPump();
@@ -25,7 +25,7 @@ class Machine {
   void updateSeconds();
   void resetSeconds();
  private:
-  int operateSolenoid(int position);
+  bool operateSolenoid(bool open);
 };
 
 #endif

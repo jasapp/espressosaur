@@ -24,23 +24,24 @@ Machine::Machine() {
   closeSolenoid();
 }
 
-int Machine::operateSolenoid(int position) {
-  digitalWrite(solenoid_open, !position);
-  digitalWrite(solenoid_close, position);
-  solenoid_position = position;
-  return solenoid_position;
+// returns true if solenoid is open
+bool Machine::operateSolenoid(bool open) {
+  digitalWrite(solenoid_open, open);
+  digitalWrite(solenoid_close, !open);
+  solenoid_is_open = open;
+  return solenoid_is_open;
 }
 
-int Machine::solenoidPosition() {
-  return solenoid_position;
+bool Machine::solenoidIsOpen() {
+  return solenoid_is_open;
 }
 
-int Machine::openSolenoid() {
-  return operateSolenoid(0);
+bool Machine::openSolenoid() {
+  return operateSolenoid(true);
 }
 
-int Machine::closeSolenoid() {
-  return operateSolenoid(1);
+bool Machine::closeSolenoid() {
+  return operateSolenoid(false);
 }
 
 int Machine::pumpSpeed() {
