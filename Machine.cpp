@@ -1,16 +1,16 @@
 #include "Arduino.h"
 #include "Machine.h"
 
-#define shot_arm 0
-#define solenoid_open 3
-#define solenoid_close 4
-#define pump_output 8
-#define shot_element 12
-#define shot_thermistor_one 13
-#define shot_thermistor_two 13
-#define shot_thermistor_three 13
-#define steam_element_one 13
-#define steam_element_two 14
+static const int shot_arm = 0;
+static const int solenoid_open = 3;
+static const int solenoid_close = 4;
+static const int pump_output = 8;
+static const int shot_element = 12;
+static const int shot_thermistor_one = 13;
+static const int shot_thermistor_two = 13;
+static const int shot_thermistor_three = 13;
+static const int steam_element_one = 13;
+static const int steam_element_two = 14;
 
 Machine::Machine() {
   pinMode(shot_arm, INPUT); 
