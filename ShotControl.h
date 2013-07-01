@@ -13,7 +13,11 @@ class ShotControl {
   int solenoid_close_at;
   int pump_start_at;
  public: 
-  ShotControl();
+ ShotControl() : 
+      preinfuse_gap(25), 
+      solenoid_open_at(220), 
+      solenoid_close_at(180),
+      pump_start_at(255) { } ;
   int startShot(int);
   int stopShot(int); 
   virtual int solenoidOpen(int) = 0; 
