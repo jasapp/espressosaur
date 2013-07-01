@@ -17,7 +17,7 @@ int ShotControl::stopShot(int arm) {
   return (arm < solenoid_close_at); 
 }
 
-char* ShotControl::controlName() {
+const char* ShotControl::controlName() {
   return "Direct"; 
 }
 

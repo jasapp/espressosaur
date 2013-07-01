@@ -15,10 +15,10 @@ class Lcd {
   Lcd();
   void clearLcd();
   void setupLcd();
-  void writeMode(char*);
+  void writeMode(const char* mode);
   void lcdShot(int, int, int);
   void lcdShotSummary(int, int, int);
-  void lcdMessage(char*);
+  void lcdMessage(const char* message);
  private:
   void createChar(char*, int);
   void addChars();

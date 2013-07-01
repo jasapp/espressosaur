@@ -119,7 +119,7 @@ void Lcd::setCursor(int column, int row) {
   writeLcdCommand(cmds, 3); 
 }
 
-void Lcd::lcdMessage(char *message) {
+void Lcd::lcdMessage(const char *message) {
   serial.write(message);
 }
 
@@ -186,7 +186,7 @@ void Lcd::writeSeconds(int seconds) {
   lcdMessage(second_str);
 }
 
-void Lcd::writeMode(char *mode) {
+void Lcd::writeMode(const char *mode) {
   if (current_state != IDLE_STATE) {
     fadeBackground(0);
     clearLcd();

@@ -22,7 +22,7 @@ class ShotControl {
   int stopShot(int); 
   virtual int solenoidOpen(int) = 0; 
   virtual int solenoidClose(int) = 0; 
-  virtual char* controlName() = 0; 
+  const virtual char* controlName() = 0; 
   virtual int pumpSpeed(int, int) = 0; 
 };
 
