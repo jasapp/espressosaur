@@ -12,18 +12,18 @@ class ShotControl {
   int solenoid_open_at;
   int solenoid_close_at;
   int pump_start_at;
- public: 
- ShotControl() : 
+  ShotControl() : 
       preinfuse_gap(25), 
       solenoid_open_at(220), 
       solenoid_close_at(180),
       pump_start_at(255) { } ;
-  int startShot(int);
-  int stopShot(int); 
-  virtual int solenoidOpen(int) = 0; 
-  virtual int solenoidClose(int) = 0; 
+ public: 
+  int startShot(int arm);
+  int stopShot(int arm); 
+  virtual int solenoidOpen(int arm);
+  virtual int solenoidClose(int arm);
   const virtual char* controlName() = 0; 
-  virtual int pumpSpeed(int, int) = 0; 
+  virtual int pumpSpeed(int arm, int seconds) = 0; 
 };
 
 #endif
