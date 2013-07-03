@@ -25,7 +25,7 @@ Machine *machine;
 ShotControl *shot_control;
 Lcd *lcd;
 
-int shot_in_progress = 0;
+bool shot_in_progress = false;
 int shot_counter = 0;
 int timer1_counter = 0;
 int timer3_counter = 0;
@@ -40,13 +40,13 @@ void sendShotData() {
   }
 }
 
-int shotInProgress() {
+bool shotInProgress() {
   return shot_in_progress;
 }
 
 void stopShot() {
   shot_counter++;
-  shot_in_progress = 0;
+  shot_in_progress = false;
   machine->stopPump();
   machine->closeSolenoid();
   machine->resetSeconds();
@@ -54,7 +54,7 @@ void stopShot() {
 }
 
 void startShot() {
-  shot_in_progress = 1; 
+  shot_in_progress = true; 
   machine->openSolenoid();
   // shotStartCmd();
 }
