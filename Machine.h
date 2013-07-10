@@ -5,8 +5,6 @@
 #ifndef Machine_h
 #define Machine_h
 
-#include "Arduino.h"
-
 class Machine { 
   int seconds;
   int pump_speed;

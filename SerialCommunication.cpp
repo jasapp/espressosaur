@@ -22,13 +22,6 @@ enum
   kSEND_CMDS_END, // Mustnt delete this line
 };
 
-// Commands we send from the PC and want to recieve on the Arduino.
-messengerCallbackFunction messengerCallbacks[] = 
-{
-  status,
-  NULL
-};
-
 void status() {
   cmdMessenger.sendCmd(kACK, "Status");
 }
@@ -73,6 +66,13 @@ void attach_callbacks(messengerCallbackFunction* callbacks) {
   }
 }
 
+// Commands we send from the PC and want to recieve on the Arduino.
+messengerCallbackFunction messengerCallbacks[] = 
+{
+  status,
+  NULL
+};
+
 void setupCmds() {
   // Listen on serial connection for messages from the pc
   Serial.begin(9600); 
@@ -90,3 +90,4 @@ void setupCmds() {
 void manageCmds() {
   cmdMessenger.feedinSerialData();
 }
+

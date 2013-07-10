@@ -13,17 +13,19 @@
 #include <Streaming.h>
 #include <SoftwareSerial.h>
 #include "Machine.h"
+#include "EspressoMachine.h"
 #include "Lcd.h"
 #include "ShotControl.h"
 #include "DirectShotControl.h"
 #include "RampShotControl.h"
+#include "SerialCommunication.h"
 
 // https://github.com/rocketscream/Low-Power.git
 // #include <LowPower.h>
 
-Machine *machine; 
-ShotControl *shot_control;
+Machine *machine;
 Lcd *lcd;
+ShotControl *shot_control;
 
 bool shot_in_progress = false;
 int shot_counter = 0;
@@ -47,16 +49,16 @@ bool shotInProgress() {
 void stopShot() {
   shot_counter++;
   shot_in_progress = false;
+  EspressoMachine::getInstance().stopShot();
   machine->stopPump();
   machine->closeSolenoid();
   machine->resetSeconds();
-  // shotEndCmd();
 }
 
 void startShot() {
   shot_in_progress = true; 
+  EspressoMachine::getInstance().startShot();
   machine->openSolenoid();
-  // shotStartCmd();
 }
 
 void setupTimer() {
@@ -107,7 +109,7 @@ void cancelShotHandleInterrupt() {
 // move the timer into Machine (?)
 ISR(TIMER3_OVF_vect) {
   TCNT3 = timer3_counter;
-  machine->updateSeconds(); 
+  EspressoMachine::getInstance().machine.updateSeconds();
 }
 
 ISR(TIMER4_OVF_vect) {
@@ -117,15 +119,7 @@ ISR(TIMER4_OVF_vect) {
 
 ISR(TIMER1_OVF_vect) {
   TCNT1 = timer1_counter;
-  // let's just have one of these, not both...
-  int arm = machine->shotArmPosition();
-  int arm_percentage = machine->shotArmPercentage();
-  int seconds = machine->currentShotDuration();
-
-  // it's possible for the solenoid to be open without the pump running
-  // this gives us preinfusion at line pressure
-  int new_pump_speed = shot_control->pumpSpeed(arm_percentage, seconds);
-  machine->setPumpSpeed(new_pump_speed); 
+  EspressoMachine::getInstance().updatePumpSpeed();
 
   // if the arm has moved to the on position
   if (shot_control->solenoidOpen(arm)) {
@@ -146,28 +140,17 @@ ISR(ANALOG_COMP_vect) {
   setupTimer();                 // set the timer so we can watch the handle closer
 }
 
-// rig something up with a queue here for displaying lingering messages
-void manageLcd() {
-  if (shotInProgress()) {
-    lcd->lcdShot(machine->pumpSpeed(), 0, machine->currentShotDuration());
-  } else {
-    lcd->writeMode(shot_control->controlName());
-  }
-}
-
 void setup() {
   machine = new Machine();
-  shot_control = new RampShotControl();
-  lcd = new Lcd();
-
+  shot_control = new DirectShotControl();
+  // EspressoMachine::getInstance().manageLcd();
   setupCmds();
-  manageLcd();
   shotHandleInterrupt(); 
 }
 
 void loop() {
   sendShotData();
-  manageLcd();
+  EspressoMachine::getInstance().manageLcd();
   manageCmds();
-  delay(50);
+  delay(10);
 }
