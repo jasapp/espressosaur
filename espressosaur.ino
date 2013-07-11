@@ -50,15 +50,11 @@ void stopShot() {
   shot_counter++;
   shot_in_progress = false;
   EspressoMachine::getInstance().stopShot();
-  // stopPump();
-  // machine->closeSolenoid();
-  // machine->resetSeconds();
 }
 
 void startShot() {
   shot_in_progress = true; 
   EspressoMachine::getInstance().startShot();
-  // machine->openSolenoid();
 }
 
 void setupTimer() {
@@ -86,21 +82,6 @@ void setupTimer() {
   interrupts();
 }
 
-void timerOff() {
-  noInterrupts();
-  TCCR1A = 0;
-  TCCR1B = 0;
-  TCCR3A = 0;
-  TCCR3B = 0;
-  TCCR4A = 0;
-  TCCR4B = 0;
-  interrupts();
-}
-
-void shotHandleInterrupt() {
-  ACSR = B01011011;
-}
-
 void cancelShotHandleInterrupt() {
   ACSR = B11011011;
 }
@@ -119,20 +100,8 @@ ISR(TIMER4_OVF_vect) {
 
 ISR(TIMER1_OVF_vect) {
   TCNT1 = timer1_counter;
-  int arm = machine->shotArmPosition();
   EspressoMachine::getInstance().updatePumpSpeed();
-
-  // if the arm has moved to the on position
-  if (shot_control->solenoidOpen(arm)) {
-    startShot();
-  } else {
-    // if the arm has moved to the off position
-    if (shot_control->solenoidClose(arm)) {
-      timerOff();
-      stopShot();
-      shotHandleInterrupt();
-    }
-  }
+  EspressoMachine::getInstance().operateSolenoid();
 }
 
 ISR(ANALOG_COMP_vect) {
@@ -144,9 +113,8 @@ ISR(ANALOG_COMP_vect) {
 void setup() {
   machine = new Machine();
   shot_control = new DirectShotControl();
-  // EspressoMachine::getInstance().manageLcd();
+  EspressoMachine::getInstance().setup();
   setupCmds();
-  shotHandleInterrupt(); 
 }
 
 void loop() {

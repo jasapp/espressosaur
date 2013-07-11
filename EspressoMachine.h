@@ -15,11 +15,13 @@ class EspressoMachine
   Machine machine;
   Lcd lcd;
   DirectShotControl shot_control;
+  void setup();
   void manageLcd();
   bool shotInProgress();
   void startShot();
   void stopShot();
   void updatePumpSpeed();
+  void operateSolenoid();
   static EspressoMachine& getInstance();
 
  private: 

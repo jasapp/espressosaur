@@ -4,9 +4,29 @@
 // from the avr-c++ micro how-to
 extern "C" void atexit(void) {}
 
+void shotHandleInterrupt() {
+  ACSR = B01011011;
+}
+
+void timerOff() {
+  noInterrupts();
+  TCCR1A = 0;
+  TCCR1B = 0;
+  TCCR3A = 0;
+  TCCR3B = 0;
+  TCCR4A = 0;
+  TCCR4B = 0;
+  interrupts();
+}
+
 EspressoMachine& EspressoMachine::getInstance() {
   static EspressoMachine instance; 
   return instance; 
+}
+
+void EspressoMachine::setup() {
+  manageLcd();
+  shotHandleInterrupt(); 
 }
 
 bool EspressoMachine::shotInProgress() {
@@ -41,3 +61,23 @@ void EspressoMachine::updatePumpSpeed() {
 
   machine.setPumpSpeed(new_pump_speed); 
 }
+
+void EspressoMachine::operateSolenoid() {
+  int arm = machine.shotArmPosition();
+
+  // if the arm has moved to the on position
+  if (shot_control.solenoidOpen(arm)) {
+    startShot();
+  } else {
+    // if the arm has moved to the off position
+    if (shot_control.solenoidClose(arm)) {
+      timerOff();
+      stopShot();
+      shotHandleInterrupt();
+    }
+  }
+}
+
+
+
+
