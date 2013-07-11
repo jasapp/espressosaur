@@ -25,7 +25,6 @@
 
 Machine *machine;
 Lcd *lcd;
-ShotControl *shot_control;
 
 bool shot_in_progress = false;
 int shot_counter = 0;
@@ -44,17 +43,6 @@ void sendShotData() {
 
 bool shotInProgress() {
   return shot_in_progress;
-}
-
-void stopShot() {
-  shot_counter++;
-  shot_in_progress = false;
-  EspressoMachine::getInstance().stopShot();
-}
-
-void startShot() {
-  shot_in_progress = true; 
-  EspressoMachine::getInstance().startShot();
 }
 
 void setupTimer() {
@@ -112,7 +100,6 @@ ISR(ANALOG_COMP_vect) {
 
 void setup() {
   machine = new Machine();
-  shot_control = new DirectShotControl();
   EspressoMachine::getInstance().setup();
   setupCmds();
 }
