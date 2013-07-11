@@ -15,10 +15,15 @@ bool EspressoMachine::shotInProgress() {
 
 void EspressoMachine::startShot() {
   shot_in_progress = true; 
+  machine.openSolenoid();
 }
 
 void EspressoMachine::stopShot() {
+  shot_counter++;
   shot_in_progress = false;
+  machine.stopPump();
+  machine.closeSolenoid();
+  machine.resetSeconds();
 }
 
 void EspressoMachine::manageLcd() {

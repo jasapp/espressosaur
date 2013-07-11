@@ -50,15 +50,15 @@ void stopShot() {
   shot_counter++;
   shot_in_progress = false;
   EspressoMachine::getInstance().stopShot();
-  machine->stopPump();
-  machine->closeSolenoid();
-  machine->resetSeconds();
+  // stopPump();
+  // machine->closeSolenoid();
+  // machine->resetSeconds();
 }
 
 void startShot() {
   shot_in_progress = true; 
   EspressoMachine::getInstance().startShot();
-  machine->openSolenoid();
+  // machine->openSolenoid();
 }
 
 void setupTimer() {
@@ -119,6 +119,7 @@ ISR(TIMER4_OVF_vect) {
 
 ISR(TIMER1_OVF_vect) {
   TCNT1 = timer1_counter;
+  int arm = machine->shotArmPosition();
   EspressoMachine::getInstance().updatePumpSpeed();
 
   // if the arm has moved to the on position
