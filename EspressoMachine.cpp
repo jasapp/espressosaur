@@ -58,7 +58,6 @@ void EspressoMachine::updatePumpSpeed() {
   int arm = machine.shotArmPercentage();
   int seconds = machine.currentShotDuration();
   int new_pump_speed = shot_control.pumpSpeed(arm, seconds);
-
   machine.setPumpSpeed(new_pump_speed); 
 }
 

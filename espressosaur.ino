@@ -36,8 +36,9 @@ volatile int send_serial = 0;
 volatile int shot_started_at = 0; 
 
 void sendShotData() {
-  if (shotInProgress() && send_serial) {
-    shotDataCmd(millis() - shot_started_at, machine->pumpSpeed());
+  if (EspressoMachine::getInstance().shotInProgress() && send_serial) {
+    int speed = EspressoMachine::getInstance().machine.pumpTach();
+    shotDataCmd(millis() - shot_started_at, speed);
   }
 }
 

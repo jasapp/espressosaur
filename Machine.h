@@ -15,6 +15,7 @@ class Machine {
   bool openSolenoid();
   bool closeSolenoid();
   int pumpSpeed();
+  int pumpTach();
   int setPumpSpeed(int);
   int stopPump();
   int shotArmPosition(); 

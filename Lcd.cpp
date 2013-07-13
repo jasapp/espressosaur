@@ -161,9 +161,9 @@ void Lcd::shallWePlayAGame() {
 int Lcd::spacesToScoot(int num, int *spaces) {
   int start = 0;
   if (num > 9)
-    start += 1; 
+    start += 1;
   if (num > 99)
-    start += 1; 
+    start += 1;
 
   return spaces[start];
 }
@@ -179,7 +179,7 @@ void Lcd::writeGrams(int grams) {
 
 void Lcd::writeSeconds(int seconds) {
   char second_str[3];
-  int spaces[] = { 15, 14, 13 };
+  int spaces[] = { 15, 13, 12 };
   
   sprintf(second_str, "%ds", seconds);
   setCursor(spacesToScoot(seconds, spaces), 2);

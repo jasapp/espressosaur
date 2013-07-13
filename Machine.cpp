@@ -4,8 +4,9 @@
 static const int shot_arm = 0;
 static const int solenoid_open = 3;
 static const int solenoid_close = 4;
-static const int pump_output = 8;
-static const int shot_element = 12;
+static const int pump_output = 13;
+static const int pump_tach = 12;
+static const int shot_element = 11;
 static const int shot_thermistor_one = 13;
 static const int shot_thermistor_two = 13;
 static const int shot_thermistor_three = 13;
@@ -18,6 +19,7 @@ Machine::Machine() {
   pinMode(solenoid_close, OUTPUT);
   pinMode(shot_element, OUTPUT);
   pinMode(pump_output, OUTPUT);
+  pinMode(pump_tach, INPUT);
 
   resetSeconds();
   stopPump();
@@ -44,6 +46,10 @@ bool Machine::closeSolenoid() {
   return operateSolenoid(false);
 }
 
+int Machine::pumpTach() {
+  return analogRead(pump_tach);
+}
+
 int Machine::pumpSpeed() {
   return pump_speed;
 }
@@ -51,7 +57,7 @@ int Machine::pumpSpeed() {
 // speed is between 0 and 1023 where 0 is off
 int Machine::setPumpSpeed(int speed) {
   pump_speed = speed; 
-  analogWrite(pump_output, speed / 4);
+  analogWrite(pump_output, map(speed, 0, 100, 0, 255));
   return speed;
 }
 
