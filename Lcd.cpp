@@ -179,8 +179,8 @@ void Lcd::writeGrams(int grams) {
 
 void Lcd::writeSeconds(int seconds) {
   char second_str[3];
-  int spaces[] = { 15, 13, 12 };
-  
+  int spaces[] = { 15, 14, 13 };
+
   sprintf(second_str, "%ds", seconds);
   setCursor(spacesToScoot(seconds, spaces), 2);
   lcdMessage(second_str);
