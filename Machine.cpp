@@ -7,10 +7,10 @@ static const int solenoid_close = 4;
 static const int pump_output = 13;
 static const int pump_tach = 12;
 static const int shot_element = 11;
-static const int shot_thermistor_one = 13;
-static const int shot_thermistor_two = 13;
-static const int shot_thermistor_three = 13;
-static const int steam_element_one = 13;
+// static const int shot_thermistor_one = 13;
+// static const int shot_thermistor_two = 13;
+// static const int shot_thermistor_three = 13;
+// static const int steam_element_one = 13;
 static const int steam_element_two = 14;
 
 Machine::Machine() {
@@ -56,9 +56,9 @@ int Machine::pumpSpeed() {
 
 // speed is between 0 and 1023 where 0 is off
 int Machine::setPumpSpeed(int speed) {
-  pump_speed = speed; 
-  analogWrite(pump_output, map(speed, 0, 100, 0, 255));
-  return speed;
+  pump_speed = (speed >= 0) ? speed : 0;
+  analogWrite(pump_output, map(pump_speed, 0, 100, 0, 255));
+  return pump_speed;
 }
 
 int Machine::stopPump() {
